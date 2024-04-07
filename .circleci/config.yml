@@ -19,6 +19,9 @@ jobs:
       # Checkout the code as the first step.
       - checkout
       - run:
+          name: check version
+          command: cmake --version
+      - run:
           name: "build and test project"
           command: |
             mkdir build
@@ -26,6 +29,9 @@ jobs:
             cmake ..
             make
             make test
+            ls
+            cd test
+            cat Makefile
 
 # Orchestrate jobs using workflows
 # See: https://circleci.com/docs/workflows/ & https://circleci.com/docs/configuration-reference/#workflows
