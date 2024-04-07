@@ -23,8 +23,8 @@ jobs:
           command: |
             mkdir build
             cd build
-            cmake ../
-            cmake --build ${pwd} --
+            cmake ..
+            make
             make test
 
 # Orchestrate jobs using workflows
