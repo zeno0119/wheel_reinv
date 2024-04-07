@@ -24,7 +24,7 @@ jobs:
             mkdir build
             cd build
             cmake ../
-            cmake --build ${pwd} --target all --
+            cmake --build ${pwd} --
             make test
 
 # Orchestrate jobs using workflows
