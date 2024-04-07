@@ -30,6 +30,7 @@ jobs:
             make
             make test
             cd test
+            ls
             cat CTestTestfile.cmake
 
 # Orchestrate jobs using workflows
