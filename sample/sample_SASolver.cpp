@@ -8,17 +8,17 @@
 
 int main()
 {
-	std::vector<std::pair<double, double>> model;
+	std::vector<std::pair<double, double>> model = {{1, 1}, {2, 2}, {3, 3}, {0, 0}};
 
 	std::vector<size_t> I_ini = {0, 1, 2, 3};
 
 	std::random_device seedGen;
 	std::mt19937 engine(seedGen());
 
-	SASolver<double, std::vector<std::pair<int, int>>, std::vector<size_t>> solver(model);
+	SASolver<double, std::vector<std::pair<double, double>>, std::vector<size_t>> solver(model);
 
 	solver.setEval(
-		[](const std::vector<std::pair<int, int>> model, std::vector<size_t> i)
+		[](const std::vector<std::pair<double, double>> model, std::vector<size_t> i)
 		{
 			double dist = 0;
 			for (size_t itr = 0; itr < model.size(); itr++)
