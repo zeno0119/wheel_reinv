@@ -28,6 +28,7 @@ std::vector<std::tuple<std::uint64_t, bool, std::string>> diff(const std::string
 
 	const auto n = orig_v.size() + 1;
 	const auto m = new_v.size() + 1;
+
 	std::vector<std::pair<std::uint64_t, std::pair<std::uint64_t, std::uint64_t>>> cost_matrix(n * m, {0, {0, 0}});
 	for (auto i = std::uint64_t{1}; i < n; ++i)
 	{
@@ -44,12 +45,11 @@ std::vector<std::tuple<std::uint64_t, bool, std::string>> diff(const std::string
 	{
 		for (auto j = std::uint64_t{1}; j < m; ++j)
 		{
-			const auto cost_del = cost_matrix[(j - 1) * n + i].first + 1;
-			const auto cost_add = cost_matrix[j * n + i - 1].first + 1;
-			auto cost_per = cost_matrix[(i - 1) * n + j - 1].first;
+			const auto cost_del = cost_matrix[j * n + i - 1].first + 1;
+			const auto cost_add = cost_matrix[(j - 1) * n + i].first + 1;
+			auto cost_per = cost_matrix[(j - 1) * n + i - 1].first;
 			if (orig_v[i - 1].compare(new_v[j - 1]) != 0)
-				cost_per++;
-
+				cost_per += 1;
 			if (cost_per <= cost_del && cost_per <= cost_add)
 				cost_matrix[j * n + i] = {cost_per, {i - 1, j - 1}};
 			else if (cost_del <= cost_per && cost_del <= cost_add)
@@ -58,29 +58,20 @@ std::vector<std::tuple<std::uint64_t, bool, std::string>> diff(const std::string
 				cost_matrix[j * n + i] = {cost_add, {i, j - 1}};
 		}
 	}
-	for (auto j = 0; j < m; ++j)
-	{
-		for (auto i = 0; i < n; ++i)
-		{
-			std::cout << cost_matrix[j * n + i].first << " ";
-		}
-		std::cout << "\n";
-	}
-	std::cout << cost_matrix[n * n + m].first << "\n";
 	// backtrack
 	std::stack<std::tuple<std::uint64_t, bool, std::string>> st;
 	std::pair<std::uint64_t, std::uint64_t> pos{n - 1, m - 1};
-	while (pos.first != 0 && pos.second != 0)
+	while (pos.first != 0 || pos.second != 0)
 	{
 		const auto [px, py] = pos;
-		const auto [nx, ny] = cost_matrix[px * n + py].second;
-		const bool isChanged = cost_matrix[px * n + py].first != cost_matrix[nx * n + ny].first;
+		const auto [nx, ny] = cost_matrix[py * n + px].second;
+		const bool isChanged = cost_matrix[py * n + px].first != cost_matrix[ny * n + nx].first;
 		if (py > ny && isChanged)
 			st.push(std::make_tuple(py, false, new_v[py - 1]));
 		if (px > nx && isChanged)
 			st.push(std::make_tuple(px, true, orig_v[px - 1]));
 
-		pos = cost_matrix[px * n + py].second;
+		pos = cost_matrix[py * n + px].second;
 	}
 	while (!st.empty())
 	{
