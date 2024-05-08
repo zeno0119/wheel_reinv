@@ -5,9 +5,9 @@
 
 #include <iostream>
 
-std::vector<std::tuple<std::uint64_t, bool, std::string>> diff(const std::string& orig_str, const std::string& new_str)
+std::vector<diff_result> diff(const std::string& orig_str, const std::string& new_str)
 {
-	std::vector<std::tuple<std::uint64_t, bool, std::string>> res;
+	std::vector<diff_result> res;
 	std::vector<std::string> orig_v, new_v;
 	{
 		std::stringstream ss(orig_str);
@@ -59,7 +59,8 @@ std::vector<std::tuple<std::uint64_t, bool, std::string>> diff(const std::string
 		}
 	}
 	// backtrack
-	std::stack<std::tuple<std::uint64_t, bool, std::string>> st;
+	std::stack<std::pair<std::uint64_t, std::string>> del_st;
+	std::stack<std::pair<std::uint64_t, std::string>> add_st;
 	std::pair<std::uint64_t, std::uint64_t> pos{n - 1, m - 1};
 	while (pos.first != 0 || pos.second != 0)
 	{
@@ -67,16 +68,46 @@ std::vector<std::tuple<std::uint64_t, bool, std::string>> diff(const std::string
 		const auto [nx, ny] = cost_matrix[py * n + px].second;
 		const bool isChanged = cost_matrix[py * n + px].first != cost_matrix[ny * n + nx].first;
 		if (py > ny && isChanged)
-			st.push(std::make_tuple(py, false, new_v[py - 1]));
+			add_st.emplace(py, new_v[py - 1]);
 		if (px > nx && isChanged)
-			st.push(std::make_tuple(px, true, orig_v[px - 1]));
+			del_st.emplace(px, orig_v[px - 1]);
+		if (!isChanged)
+		{
+			std::vector<std::string> del_v;
+			std::vector<std::string> add_v;
+			std::uint64_t begin_del;
+			std::uint64_t end_del;
+			std::uint64_t begin_add;
+			std::uint64_t end_add;
+			if (!del_st.empty())
+				begin_del = del_st.top().first;
+			while (!del_st.empty())
+			{
+				const auto [line, str] = del_st.top();
+				if (del_st.size() == 1)
+					end_del = line;
+				del_v.push_back(str);
+				del_st.pop();
+			}
+			if (!add_st.empty())
+				begin_add = add_st.top().first;
+			while (!add_st.empty())
+			{
+				const auto [line, str] = add_st.top();
+				if (add_st.size() == 1)
+					end_add = line;
+				add_v.push_back(str);
+				add_st.pop();
+			}
 
+			if (del_v.empty() && !add_v.empty())
+				res.emplace_back(begin_add, end_add, add_v, diff_state::added);
+			else if (!del_v.empty() && add_v.empty())
+				res.emplace_back(begin_del, end_del, del_v, diff_state::deleted);
+			else
+				res.emplace_back(begin_add, end_add, add_v, begin_del, end_del, del_v);
+		}
 		pos = cost_matrix[py * n + px].second;
-	}
-	while (!st.empty())
-	{
-		res.emplace_back(st.top());
-		st.pop();
 	}
 	return res;
 }
