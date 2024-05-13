@@ -1,8 +1,10 @@
+#pragma once
+
 #include <fstream>
 #include <string>
 #include <vector>
 
-std::vector<unsigned char> load_binary(const std::string& path)
+inline std::vector<unsigned char> load_binary(const std::string& path)
 {
 	std::ifstream ifs(path, std::ios::binary);
 
